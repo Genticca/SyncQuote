@@ -35,3 +35,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Local frontend repository ###
+/SyncQuote_Front/
+
+### Local schema documents ###
+/DB_정리_시트_정리본.xlsx
