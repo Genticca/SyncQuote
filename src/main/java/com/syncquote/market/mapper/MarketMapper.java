@@ -10,6 +10,4 @@ public interface MarketMapper {
     List<MarketInfo> findAll();
 
     List<MarketInfo> findByExchange(@Param("exchange") String exchange);
-
-    void upsertAll(@Param("markets") List<MarketInfo> markets);
 }

@@ -1,11 +1,11 @@
 package com.syncquote.market.redis;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 import com.syncquote.common.redis.RedisKeyFactory;
 import com.syncquote.exchange.support.ExchangeType;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Objects;
@@ -32,28 +32,11 @@ public class MarketRedisRepository {
                 .toList();
     }
 
-    public void saveAll(ExchangeType exchange, List<MarketRedis> markets) {
-        String key = RedisKeyFactory.markets(exchange);
-        redisTemplate.delete(key);
-        if (markets.isEmpty()) {
-            return;
-        }
-        markets.forEach(market -> redisTemplate.opsForHash().put(key, market.market(), writeMarket(market)));
-    }
-
     private MarketRedis readMarket(String json) {
         try {
             return objectMapper.readValue(json, MarketRedis.class);
         } catch (JacksonException exception) {
             return null;
-        }
-    }
-
-    private String writeMarket(MarketRedis market) {
-        try {
-            return objectMapper.writeValueAsString(market);
-        } catch (JacksonException exception) {
-            throw new IllegalStateException("failed to serialize market redis value", exception);
         }
     }
 }

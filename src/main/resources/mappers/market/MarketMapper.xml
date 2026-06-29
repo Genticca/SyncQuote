@@ -41,35 +41,4 @@
         WHERE exchange = #{exchange}
         ORDER BY market
     </select>
-
-    <insert id="upsertAll">
-        INSERT INTO market_info (
-            exchange,
-            market,
-            korean_name,
-            english_name,
-            market_warning,
-            event_warning,
-            event_caution
-        )
-        VALUES
-        <foreach collection="markets" item="market" separator=",">
-            (
-                #{market.exchange},
-                #{market.market},
-                #{market.koreanName},
-                #{market.englishName},
-                #{market.marketWarning},
-                #{market.eventWarning},
-                #{market.eventCaution}
-            )
-        </foreach>
-        ON DUPLICATE KEY UPDATE
-            korean_name = VALUES(korean_name),
-            english_name = VALUES(english_name),
-            market_warning = VALUES(market_warning),
-            event_warning = VALUES(event_warning),
-            event_caution = VALUES(event_caution),
-            updated_at = CURRENT_TIMESTAMP
-    </insert>
 </mapper>

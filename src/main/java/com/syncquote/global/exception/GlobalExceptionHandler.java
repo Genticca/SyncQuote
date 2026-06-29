@@ -1,6 +1,7 @@
 package com.syncquote.global.exception;
 
 import com.syncquote.global.response.ApiResponse;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -14,6 +15,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(errorCode.status())
                 .body(ApiResponse.error(errorCode.code(), exception.getMessage()));
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataAccessException(DataAccessException exception) {
+        ErrorCode errorCode = ErrorCode.UPSTREAM_UNAVAILABLE;
+        return ResponseEntity
+                .status(errorCode.status())
+                .body(ApiResponse.error(errorCode.code(), errorCode.message()));
     }
 
     @ExceptionHandler(Exception.class)

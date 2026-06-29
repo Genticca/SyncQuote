@@ -25,7 +25,7 @@ public record MarketResponseDto(
                 MarketCodeNormalizer.toSymbol(marketInfo.getMarket()),
                 marketInfo.getKoreanName(),
                 marketInfo.getEnglishName(),
-                normalizeWarning(marketInfo.getMarketWarning()),
+                marketInfo.getMarketWarning(),
                 marketInfo.isEventWarning(),
                 marketInfo.isEventCaution()
         );
@@ -41,16 +41,9 @@ public record MarketResponseDto(
                 MarketCodeNormalizer.toSymbol(marketRedis.market()),
                 marketRedis.koreanName(),
                 marketRedis.englishName(),
-                normalizeWarning(marketRedis.marketWarning()),
+                marketRedis.marketWarning(),
                 marketRedis.eventWarning(),
                 marketRedis.eventCaution()
         );
-    }
-
-    private static String normalizeWarning(String marketWarning) {
-        if (marketWarning == null || marketWarning.isBlank()) {
-            return "NONE";
-        }
-        return marketWarning;
     }
 }
