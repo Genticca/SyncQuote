@@ -24,3 +24,7 @@ management:
     health:
       probes:
         enabled: true
+
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:}
