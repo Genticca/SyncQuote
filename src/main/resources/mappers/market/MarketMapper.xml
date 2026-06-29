@@ -3,4 +3,42 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.syncquote.market.mapper.MarketMapper">
+    <resultMap id="MarketInfoResultMap" type="com.syncquote.market.entity.MarketInfo">
+        <id property="exchange" column="exchange" />
+        <id property="market" column="market" />
+        <result property="koreanName" column="korean_name" />
+        <result property="englishName" column="english_name" />
+        <result property="marketWarning" column="market_warning" />
+        <result property="eventWarning" column="event_warning" />
+        <result property="eventCaution" column="event_caution" />
+        <result property="createdAt" column="created_at" />
+        <result property="updatedAt" column="updated_at" />
+    </resultMap>
+
+    <sql id="MarketColumns">
+        exchange,
+        market,
+        korean_name,
+        english_name,
+        market_warning,
+        event_warning,
+        event_caution,
+        created_at,
+        updated_at
+    </sql>
+
+    <select id="findAll" resultMap="MarketInfoResultMap">
+        SELECT
+        <include refid="MarketColumns" />
+        FROM market_info
+        ORDER BY exchange, market
+    </select>
+
+    <select id="findByExchange" resultMap="MarketInfoResultMap">
+        SELECT
+        <include refid="MarketColumns" />
+        FROM market_info
+        WHERE exchange = #{exchange}
+        ORDER BY market
+    </select>
 </mapper>
