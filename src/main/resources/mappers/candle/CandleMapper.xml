@@ -3,4 +3,50 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.syncquote.candle.mapper.CandleMapper">
+
+    <resultMap id="candleResultMap" type="com.syncquote.candle.entity.Candle">
+        <id column="exchange" property="exchange"/>
+        <id column="market" property="market"/>
+        <id column="interval_type" property="intervalType"/>
+        <id column="candle_time" property="candleTime"/>
+        <result column="open_price" property="openPrice"/>
+        <result column="high_price" property="highPrice"/>
+        <result column="low_price" property="lowPrice"/>
+        <result column="close_price" property="closePrice"/>
+        <result column="volume" property="volume"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <sql id="candleColumns">
+        exchange,
+        market,
+        interval_type,
+        candle_time,
+        open_price,
+        high_price,
+        low_price,
+        close_price,
+        volume,
+        created_at
+    </sql>
+
+    <!-- exchange: DB는 소문자(upbit/binance) 저장. 최근 N개를 candle_time 내림차순으로 추린 뒤,
+         응답 계약(time 오름차순)에 맞춰 다시 정렬한다. -->
+    <select id="findCandles" resultMap="candleResultMap">
+        SELECT
+        <include refid="candleColumns"/>
+        FROM (
+            SELECT
+            <include refid="candleColumns"/>
+            FROM candles
+            WHERE exchange = LOWER(#{exchange})
+              AND market = #{market}
+              AND interval_type = #{intervalType}
+              AND candle_time &lt;= #{to}
+            ORDER BY candle_time DESC
+            LIMIT #{limit}
+        ) AS recent
+        ORDER BY candle_time ASC
+    </select>
+
 </mapper>

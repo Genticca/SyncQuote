@@ -2,6 +2,7 @@ package com.syncquote.common.sse;
 
 public enum SseEventType {
     TICKER("ticker"),
+    CANDLE("candle"),
     HEARTBEAT("heartbeat");
 
     private final String eventName;
