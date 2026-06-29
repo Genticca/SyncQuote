@@ -1,6 +1,7 @@
 package com.syncquote.ticker.redis;
 
 import com.syncquote.common.redis.RedisKeyFactory;
+import com.syncquote.exchange.support.ExchangeType;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -12,15 +13,13 @@ import java.util.Map;
 public class TickerRestMetaRedisRepository {
 
     private final HashOperations<String, String, String> hashOperations;
-    private final RedisKeyFactory redisKeyFactory;
 
-    public TickerRestMetaRedisRepository(StringRedisTemplate redisTemplate, RedisKeyFactory redisKeyFactory) {
+    public TickerRestMetaRedisRepository(StringRedisTemplate redisTemplate) {
         this.hashOperations = redisTemplate.opsForHash();
-        this.redisKeyFactory = redisKeyFactory;
     }
 
-    public TickerRestMetaRedis find(String exchange, String market) {
-        String key = redisKeyFactory.tickerRestMetaKey(exchange, market);
+    public TickerRestMetaRedis find(ExchangeType exchange, String market) {
+        String key = RedisKeyFactory.tickerRestMeta(exchange, market);
         Map<String, String> fields = hashOperations.entries(key);
         if (fields.isEmpty()) {
             return null;

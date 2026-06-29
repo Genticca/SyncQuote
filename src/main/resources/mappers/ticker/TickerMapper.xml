@@ -23,8 +23,7 @@
         <result column="market_warning" property="marketWarning"/>
     </resultMap>
 
-    <!-- exchange: DB는 소문자(upbit/binance) 저장, API 계약은 대문자 → 매퍼 경계에서 변환.
-         market_warning: DB는 NULL 허용(바이낸스), API 계약은 non-null → NONE으로 보정. -->
+    <!-- exchange: DB는 소문자(upbit/binance) 저장, API 계약은 대문자 → 매퍼 경계에서 변환. -->
     <sql id="tickerJoinSelect">
         SELECT
             UPPER(t.exchange) AS exchange,
@@ -42,7 +41,7 @@
             t.updated_at,
             m.korean_name,
             m.english_name,
-            COALESCE(m.market_warning, 'NONE') AS market_warning
+            m.market_warning
         FROM ticker_latest t
         JOIN market_info m ON m.exchange = t.exchange AND m.market = t.market
     </sql>
