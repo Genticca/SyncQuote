@@ -121,13 +121,34 @@ Docker/K8s: 환경변수, ConfigMap, Secret으로 DB/Redis 연결 정보 주입
 - MySQL 8.4
 - Redis 7.4 Alpine
 - API 컨테이너는 `app` 프로필로 선택 실행
+- `01-schema.sql`은 MySQL 컨테이너의 `/docker-entrypoint-initdb.d/01-schema.sql`로 마운트되어 최초 DB 초기화 시 실행
 
 Spring Boot Docker Compose 지원이 활성화되어 있어 로컬에서 `bootRun`으로 실행하면 Compose 기반 개발 서비스를 함께 사용할 수 있습니다.
 
-운영 또는 K8s 환경에서는 Docker Compose 자동 실행을 끄고 외부 인프라에 연결해야 합니다.
+운영 또는 K8s 환경에서는 `prod` 프로파일을 사용하고 Docker Compose 자동 실행을 끈 뒤 외부 인프라에 연결합니다.
 
 ```text
+SPRING_PROFILES_ACTIVE=prod
 SPRING_DOCKER_COMPOSE_ENABLED=false
+```
+
+## Profile 구성
+
+기본 프로파일은 `develop`입니다.
+
+- `application.yaml`: 공통 설정, 기본 프로파일, MyBatis 설정
+- `application-develop.yaml`: 로컬 개발용 MySQL/Redis 연결, Docker Compose 활성화
+- `application-prod.yaml`: 배포용 외부 MySQL/Redis 연결, Docker Compose 비활성화
+
+배포 환경에서는 아래 환경변수를 주입해야 합니다.
+
+```text
+SPRING_PROFILES_ACTIVE=prod
+SPRING_DATASOURCE_URL=jdbc:mysql://...
+SPRING_DATASOURCE_USERNAME=...
+SPRING_DATASOURCE_PASSWORD=...
+SPRING_DATA_REDIS_HOST=...
+SPRING_DATA_REDIS_PORT=6379
 ```
 
 ## 실행 방법
@@ -138,11 +159,19 @@ SPRING_DOCKER_COMPOSE_ENABLED=false
 ./gradlew bootRun
 ```
 
+명시적으로 개발 프로파일을 지정하려면 아래처럼 실행합니다.
+
+```bash
+SPRING_PROFILES_ACTIVE=develop ./gradlew bootRun
+```
+
 ### MySQL/Redis만 직접 실행
 
 ```bash
 docker compose up -d mysql redis
 ```
+
+`01-schema.sql`은 MySQL 데이터 볼륨이 비어 있는 최초 초기화 시점에만 실행됩니다. 이미 `mysql-data` 볼륨이 만들어진 뒤 SQL을 다시 적용하려면 볼륨을 지우고 다시 띄우거나 MySQL에 직접 접속해 SQL을 실행해야 합니다.
 
 ### API까지 컨테이너로 실행
 
