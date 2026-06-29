@@ -45,3 +45,6 @@ out/
 ### Local schema documents ###
 /DB_정리_시트_정리본.xlsx
 ~$*.xlsx
+
+### Local docs ###
+/docs/
