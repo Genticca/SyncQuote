@@ -39,5 +39,9 @@ out/
 ### Local frontend repository ###
 /SyncQuote_Front/
 
+### Local infrastructure repository ###
+/SyncQuote_Infra/
+
 ### Local schema documents ###
 /DB_정리_시트_정리본.xlsx
+~$*.xlsx
