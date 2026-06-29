@@ -11,6 +11,8 @@ import com.syncquote.ticker.entity.TickerLatest;
 import com.syncquote.ticker.mapper.TickerMapper;
 import com.syncquote.ticker.redis.TickerRestMetaRedis;
 import com.syncquote.ticker.redis.TickerRestMetaRedisRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,6 +21,7 @@ import java.util.List;
 @Service
 public class TickerService {
 
+    private static final Logger log = LoggerFactory.getLogger(TickerService.class);
     private static final BigDecimal PERCENT_MULTIPLIER = BigDecimal.valueOf(100);
 
     private final TickerMapper tickerMapper;
@@ -59,7 +62,7 @@ public class TickerService {
     private TickerResponseDto toResponseDto(TickerLatest row) {
         ExchangeType exchange = ExchangeType.from(row.getExchange());
         String symbol = MarketCodeNormalizer.toSymbol(exchange, row.getMarket());
-        TickerRestMetaRedis meta = tickerRestMetaRedisRepository.find(exchange, row.getMarket());
+        TickerRestMetaRedis meta = findTickerRestMeta(exchange, row.getMarket());
 
         return new TickerResponseDto(
                 exchange.apiCode(),
@@ -81,6 +84,15 @@ public class TickerService {
                 meta == null ? null : meta.getLowPrice52w(),
                 row.getEventTimestamp()
         );
+    }
+
+    private TickerRestMetaRedis findTickerRestMeta(ExchangeType exchange, String market) {
+        try {
+            return tickerRestMetaRedisRepository.find(exchange, market);
+        } catch (RuntimeException exception) {
+            log.warn("Ticker 52-week metadata Redis lookup failed. exchange={}, market={}", exchange.apiCode(), market, exception);
+            return null;
+        }
     }
 
     private BigDecimal toPercent(BigDecimal value) {
