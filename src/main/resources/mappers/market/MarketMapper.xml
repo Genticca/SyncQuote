@@ -15,7 +15,7 @@
         <result property="updatedAt" column="updated_at" />
     </resultMap>
 
-    <sql id="MarketColumns">
+    <sql id="MarketInfoColumns">
         exchange,
         market,
         korean_name,
@@ -29,16 +29,24 @@
 
     <select id="findAll" resultMap="MarketInfoResultMap">
         SELECT
-        <include refid="MarketColumns" />
+        <include refid="MarketInfoColumns" />
         FROM market_info
         ORDER BY exchange, market
     </select>
 
     <select id="findByExchange" resultMap="MarketInfoResultMap">
         SELECT
-        <include refid="MarketColumns" />
+        <include refid="MarketInfoColumns" />
         FROM market_info
         WHERE exchange = #{exchange}
         ORDER BY market
+    </select>
+
+    <select id="existsMarket" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1
+            FROM market_info
+            WHERE exchange = LOWER(#{exchange}) AND market = #{market}
+        )
     </select>
 </mapper>

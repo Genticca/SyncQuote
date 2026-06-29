@@ -10,4 +10,6 @@ public interface MarketMapper {
     List<MarketInfo> findAll();
 
     List<MarketInfo> findByExchange(@Param("exchange") String exchange);
+
+    boolean existsMarket(@Param("exchange") String exchange, @Param("market") String market);
 }

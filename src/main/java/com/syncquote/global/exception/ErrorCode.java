@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "INVALID_PARAMETER", "요청 파라미터가 올바르지 않습니다."),
     MARKET_NOT_FOUND(HttpStatus.NOT_FOUND, "MARKET_NOT_FOUND", "해당 마켓을 찾을 수 없습니다."),
+    TICKER_NOT_FOUND(HttpStatus.NOT_FOUND, "TICKER_NOT_FOUND", "해당 현재가를 찾을 수 없습니다."),
     UPSTREAM_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "UPSTREAM_UNAVAILABLE", "외부 데이터 소스를 사용할 수 없습니다."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "서버 오류가 발생했습니다.");
 

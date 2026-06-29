@@ -1,30 +1,47 @@
 package com.syncquote.exchange.support;
 
-public class MarketCodeNormalizer {
+import java.util.Comparator;
+import java.util.List;
+
+public final class MarketCodeNormalizer {
+
+    private static final List<String> BINANCE_QUOTE_ASSETS = List.of(
+            "USDT", "FDUSD", "BUSD", "USDC", "TUSD", "BTC", "ETH", "BNB", "TRY", "EUR", "GBP", "KRW"
+    ).stream().sorted(Comparator.comparingInt(String::length).reversed()).toList();
 
     private MarketCodeNormalizer() {
+    }
+
+    public static String toSymbol(ExchangeType exchange, String market) {
+        if (market == null || market.isBlank()) {
+            return "";
+        }
+
+        String normalized = market.trim().toUpperCase();
+        if (exchange == ExchangeType.UPBIT) {
+            int dashIndex = normalized.indexOf('-');
+            return dashIndex >= 0 ? normalized.substring(dashIndex + 1) : normalized;
+        }
+        return BINANCE_QUOTE_ASSETS.stream()
+                .filter(quote -> normalized.length() > quote.length() && normalized.endsWith(quote))
+                .findFirst()
+                .map(quote -> normalized.substring(0, normalized.length() - quote.length()))
+                .orElse(normalized);
     }
 
     public static String toSymbol(String market) {
         if (market == null || market.isBlank()) {
             return "";
         }
-
-        String trimmed = market.trim().toUpperCase();
-        int dashIndex = trimmed.indexOf('-');
-        if (dashIndex >= 0 && dashIndex < trimmed.length() - 1) {
-            return trimmed.substring(dashIndex + 1);
+        String normalized = market.trim().toUpperCase();
+        int dashIndex = normalized.indexOf('-');
+        if (dashIndex >= 0 && dashIndex < normalized.length() - 1) {
+            return normalized.substring(dashIndex + 1);
         }
-
-        if (trimmed.endsWith("USDT") && trimmed.length() > 4) {
-            return trimmed.substring(0, trimmed.length() - 4);
-        }
-        if (trimmed.endsWith("BTC") && trimmed.length() > 3) {
-            return trimmed.substring(0, trimmed.length() - 3);
-        }
-        if (trimmed.endsWith("ETH") && trimmed.length() > 3) {
-            return trimmed.substring(0, trimmed.length() - 3);
-        }
-        return trimmed;
+        return BINANCE_QUOTE_ASSETS.stream()
+                .filter(quote -> normalized.length() > quote.length() && normalized.endsWith(quote))
+                .findFirst()
+                .map(quote -> normalized.substring(0, normalized.length() - quote.length()))
+                .orElse(normalized);
     }
 }
