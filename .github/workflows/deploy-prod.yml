@@ -85,6 +85,11 @@ jobs:
 
   deploy:
     name: Deploy to Kubernetes
+    # self-hosted runner + 클러스터가 준비됐을 때만 실행.
+    # repo 변수 DEPLOY_ENABLED=true 설정 시 동작. 미설정이면 이 잡은 'skipped' →
+    # test/build-and-push까지만 완료되어 GHCR 푸시는 정상, 무기한 Pending·실패 Deployment 방지.
+    # (runner 없으면 이 잡이 큐에 멈추고 concurrency가 다음 push의 빌드까지 막아 'Build 안 됨'을 유발했음)
+    if: ${{ vars.DEPLOY_ENABLED == 'true' }}
     runs-on: [self-hosted, linux, x64]
     needs: build-and-push
     environment: production
