@@ -13,10 +13,13 @@ import com.syncquote.ticker.redis.TickerRestMetaRedis;
 import com.syncquote.ticker.redis.TickerRestMetaRedisRepository;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
 public class TickerService {
+
+    private static final BigDecimal PERCENT = BigDecimal.valueOf(100);
 
     private final TickerMapper tickerMapper;
     private final MarketMapper marketMapper;
@@ -66,8 +69,8 @@ public class TickerService {
                 row.getMarketWarning(),
                 row.getTradePrice(),
                 row.getChangeStatus(),
-                row.getChangeRate(),
-                row.getSignedChangeRate(),
+                row.getChangeRate().multiply(PERCENT),
+                row.getSignedChangeRate().multiply(PERCENT),
                 row.getSignedChangePrice(),
                 row.getAccTradePrice24h(),
                 row.getAccTradeVolume24h(),

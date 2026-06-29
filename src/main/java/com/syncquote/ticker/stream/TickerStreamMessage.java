@@ -20,6 +20,10 @@ public record TickerStreamMessage(
         Long eventTimestamp
 ) {
 
+    private static final BigDecimal PERCENT = BigDecimal.valueOf(100);
+
+    // change_rate/signed_change_rate는 내부적으로 항상 소수(비율)로 들고 있는다.
+    // 퍼센트(예 2.34) 변환은 API 응답을 만드는 곳(TickerService/TickerStreamConsumer)에서만 한다.
     public static TickerStreamMessage fromUpbit(UpbitTickerResponse r) {
         return new TickerStreamMessage(
                 "UPBIT",
@@ -39,7 +43,7 @@ public record TickerStreamMessage(
 
     public static TickerStreamMessage fromBinance(BinanceTickerResponse r) {
         BigDecimal signedChangePrice = r.priceChange();
-        BigDecimal signedChangeRate = r.priceChangePercent();
+        BigDecimal signedChangeRate = r.priceChangePercent().divide(PERCENT);
         String changeStatus = signedChangePrice.signum() > 0 ? "RISE" : signedChangePrice.signum() < 0 ? "FALL" : "EVEN";
 
         return new TickerStreamMessage(
