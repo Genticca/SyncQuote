@@ -4,3 +4,9 @@
 build
 out
 *.iml
+
+# 다른 프로젝트/문서는 API 이미지 빌드 컨텍스트에서 제외 (전송량 절감)
+SyncQuote_Front
+SyncQuote_Infra
+docs
+workflows
