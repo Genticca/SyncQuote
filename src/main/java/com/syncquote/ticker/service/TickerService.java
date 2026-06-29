@@ -2,8 +2,8 @@ package com.syncquote.ticker.service;
 
 import com.syncquote.exchange.support.ExchangeType;
 import com.syncquote.exchange.support.MarketCodeNormalizer;
-import com.syncquote.global.exception.MarketNotFoundException;
-import com.syncquote.global.exception.TickerNotFoundException;
+import com.syncquote.global.exception.BusinessException;
+import com.syncquote.global.exception.ErrorCode;
 import com.syncquote.market.mapper.MarketMapper;
 import com.syncquote.ticker.dto.TickerRequestDto;
 import com.syncquote.ticker.dto.TickerResponseDto;
@@ -13,10 +13,13 @@ import com.syncquote.ticker.redis.TickerRestMetaRedis;
 import com.syncquote.ticker.redis.TickerRestMetaRedisRepository;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
 public class TickerService {
+
+    private static final BigDecimal PERCENT_MULTIPLIER = BigDecimal.valueOf(100);
 
     private final TickerMapper tickerMapper;
     private final MarketMapper marketMapper;
@@ -46,19 +49,20 @@ public class TickerService {
         TickerLatest row = tickerMapper.findTicker(exchange, market);
         if (row == null) {
             if (!marketMapper.existsMarket(exchange, market)) {
-                throw new MarketNotFoundException("해당 마켓이 존재하지 않습니다: " + exchange + " " + market);
+                throw new BusinessException(ErrorCode.MARKET_NOT_FOUND, "해당 마켓이 존재하지 않습니다: " + exchange + " " + market);
             }
-            throw new TickerNotFoundException("해당 마켓의 현재가가 없습니다: " + exchange + " " + market);
+            throw new BusinessException(ErrorCode.TICKER_NOT_FOUND, "해당 마켓의 현재가가 없습니다: " + exchange + " " + market);
         }
         return toResponseDto(row);
     }
 
     private TickerResponseDto toResponseDto(TickerLatest row) {
-        String symbol = MarketCodeNormalizer.toSymbol(ExchangeType.valueOf(row.getExchange()), row.getMarket());
-        TickerRestMetaRedis meta = tickerRestMetaRedisRepository.find(row.getExchange(), row.getMarket());
+        ExchangeType exchange = ExchangeType.from(row.getExchange());
+        String symbol = MarketCodeNormalizer.toSymbol(exchange, row.getMarket());
+        TickerRestMetaRedis meta = tickerRestMetaRedisRepository.find(exchange, row.getMarket());
 
         return new TickerResponseDto(
-                row.getExchange(),
+                exchange.apiCode(),
                 row.getMarket(),
                 symbol,
                 row.getKoreanName(),
@@ -66,8 +70,8 @@ public class TickerService {
                 row.getMarketWarning(),
                 row.getTradePrice(),
                 row.getChangeStatus(),
-                row.getChangeRate(),
-                row.getSignedChangeRate(),
+                toPercent(row.getChangeRate()),
+                toPercent(row.getSignedChangeRate()),
                 row.getSignedChangePrice(),
                 row.getAccTradePrice24h(),
                 row.getAccTradeVolume24h(),
@@ -77,5 +81,9 @@ public class TickerService {
                 meta == null ? null : meta.getLowPrice52w(),
                 row.getEventTimestamp()
         );
+    }
+
+    private BigDecimal toPercent(BigDecimal value) {
+        return value == null ? null : value.multiply(PERCENT_MULTIPLIER);
     }
 }

@@ -13,14 +13,35 @@ public final class MarketCodeNormalizer {
     }
 
     public static String toSymbol(ExchangeType exchange, String market) {
+        if (market == null || market.isBlank()) {
+            return "";
+        }
+
+        String normalized = market.trim().toUpperCase();
         if (exchange == ExchangeType.UPBIT) {
-            int dashIndex = market.indexOf('-');
-            return dashIndex >= 0 ? market.substring(dashIndex + 1) : market;
+            int dashIndex = normalized.indexOf('-');
+            return dashIndex >= 0 ? normalized.substring(dashIndex + 1) : normalized;
         }
         return BINANCE_QUOTE_ASSETS.stream()
-                .filter(quote -> market.length() > quote.length() && market.endsWith(quote))
+                .filter(quote -> normalized.length() > quote.length() && normalized.endsWith(quote))
                 .findFirst()
-                .map(quote -> market.substring(0, market.length() - quote.length()))
-                .orElse(market);
+                .map(quote -> normalized.substring(0, normalized.length() - quote.length()))
+                .orElse(normalized);
+    }
+
+    public static String toSymbol(String market) {
+        if (market == null || market.isBlank()) {
+            return "";
+        }
+        String normalized = market.trim().toUpperCase();
+        int dashIndex = normalized.indexOf('-');
+        if (dashIndex >= 0 && dashIndex < normalized.length() - 1) {
+            return normalized.substring(dashIndex + 1);
+        }
+        return BINANCE_QUOTE_ASSETS.stream()
+                .filter(quote -> normalized.length() > quote.length() && normalized.endsWith(quote))
+                .findFirst()
+                .map(quote -> normalized.substring(0, normalized.length() - quote.length()))
+                .orElse(normalized);
     }
 }

@@ -1,27 +1,25 @@
 package com.syncquote.common.redis;
 
-import org.springframework.stereotype.Component;
+import com.syncquote.exchange.support.ExchangeType;
 
-@Component
 public class RedisKeyFactory {
 
-    public String marketsKey(String exchange) {
-        return RedisKeyType.MARKETS.getPattern().formatted(lower(exchange));
+    private RedisKeyFactory() {
     }
 
-    public String candle1sKey(String exchange, String code) {
-        return RedisKeyType.CANDLE_1S.getPattern().formatted(lower(exchange), code);
+    public static String markets(ExchangeType exchange) {
+        return RedisKeyType.MARKETS.format(exchange.storageCode());
     }
 
-    public String tickerStreamKey(String exchange, String code) {
-        return RedisKeyType.TICKER_STREAM.getPattern().formatted(lower(exchange), code);
+    public static String candlesOneSecond(ExchangeType exchange, String market) {
+        return RedisKeyType.CANDLES_ONE_SECOND.format(exchange.storageCode(), market);
     }
 
-    public String tickerRestMetaKey(String exchange, String code) {
-        return RedisKeyType.TICKER_REST_META.getPattern().formatted(lower(exchange), code);
+    public static String tickerStream(ExchangeType exchange, String market) {
+        return RedisKeyType.TICKER_STREAM.format(exchange.storageCode(), market);
     }
 
-    private String lower(String exchange) {
-        return exchange.toLowerCase();
+    public static String tickerRestMeta(ExchangeType exchange, String market) {
+        return RedisKeyType.TICKER_REST_META.format(exchange.storageCode(), market);
     }
 }
