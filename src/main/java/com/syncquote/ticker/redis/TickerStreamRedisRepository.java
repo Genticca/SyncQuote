@@ -17,6 +17,10 @@ import java.util.List;
 public class TickerStreamRedisRepository {
 
     private static final String TICKER_STREAM_PATTERN = "ticker:*:*";
+    // "ticker:rest:{exch}:{code}" 는 52주 메타 Hash(스트림 아님)인데 glob "ticker:*:*" 의
+    // '*' 가 ':' 도 매칭해 함께 잡힌다. 이 키에 opsForStream().read() 를 호출하면 WRONGTYPE
+    // 예외가 나고, 그 폴 사이클 for 루프 전체가 중단돼 SSE가 산발적으로만 도달한다. → 제외.
+    private static final String REST_TICKER_PREFIX = "ticker:rest:";
 
     private final StringRedisTemplate redisTemplate;
 
@@ -29,7 +33,11 @@ public class TickerStreamRedisRepository {
         List<String> keys = new ArrayList<>();
         try (Cursor<String> cursor = redisTemplate.scan(options)) {
             while (cursor.hasNext()) {
-                keys.add(cursor.next());
+                String key = cursor.next();
+                if (key.startsWith(REST_TICKER_PREFIX)) {
+                    continue; // 메타 Hash → 스트림 폴링 대상 아님 (WRONGTYPE 방지)
+                }
+                keys.add(key);
             }
         }
         return keys;

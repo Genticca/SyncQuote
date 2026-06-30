@@ -15,7 +15,7 @@ public final class TickerStreamRedis {
                 exchange,
                 market,
                 decimal(fields.get("trade_price")),
-                string(fields.get("change_status")),
+                string(fields.get("change")),
                 decimal(fields.get("change_rate")),
                 decimal(fields.get("signed_change_rate")),
                 decimal(fields.get("signed_change_price")),
@@ -23,7 +23,7 @@ public final class TickerStreamRedis {
                 decimal(fields.get("acc_trade_volume_24h")),
                 decimal(fields.get("high_price")),
                 decimal(fields.get("low_price")),
-                longValue(fields.get("event_timestamp"))
+                longValue(fields.get("timestamp"))
         );
     }
 
