@@ -25,8 +25,10 @@ public class TickerRestMetaRedisRepository {
             return null;
         }
         TickerRestMetaRedis meta = new TickerRestMetaRedis();
-        meta.setHighPrice52w(parse(fields.get("high_price_52w")));
-        meta.setLowPrice52w(parse(fields.get("low_price_52w")));
+        // 수집기(upbit.go)가 Hash에 쓰는 실제 필드명과 일치시켜야 함.
+        // 기존 high_price_52w/low_price_52w 는 생산자에 없는 키라 항상 null이었음.
+        meta.setHighPrice52w(parse(fields.get("highest_52_week_price")));
+        meta.setLowPrice52w(parse(fields.get("lowest_52_week_price")));
         return meta;
     }
 
