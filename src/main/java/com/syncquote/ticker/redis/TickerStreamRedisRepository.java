@@ -2,6 +2,8 @@ package com.syncquote.ticker.redis;
 
 import com.syncquote.exchange.support.ExchangeType;
 import com.syncquote.ticker.stream.TickerStreamMessage;
+import org.springframework.data.domain.Range;
+import org.springframework.data.redis.connection.Limit;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.connection.stream.ReadOffset;
 import org.springframework.data.redis.connection.stream.StreamOffset;
@@ -64,6 +66,16 @@ public class TickerStreamRedisRepository {
                         TickerStreamRedis.fromFieldMap(keyParts.exchange(), keyParts.market(), record.getValue())
                 ))
                 .toList();
+    }
+
+    /** 스트림의 현재 마지막 레코드 ID. 신규 구독 시작점으로 써서 과거 backlog 재생을 건너뛴다. */
+    public String latestId(String key) {
+        List<MapRecord<String, Object, Object>> last = redisTemplate.opsForStream()
+                .reverseRange(key, Range.<String>unbounded(), Limit.limit().count(1));
+        if (last == null || last.isEmpty()) {
+            return "0-0";
+        }
+        return last.get(0).getId().getValue();
     }
 
     private KeyParts parseKey(String key) {

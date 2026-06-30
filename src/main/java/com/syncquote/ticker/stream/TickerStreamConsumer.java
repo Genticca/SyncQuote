@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,7 +19,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TickerStreamConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(TickerStreamConsumer.class);
-    private static final String FIRST_RECORD_ID = "0-0";
     private static final BigDecimal PERCENT_MULTIPLIER = BigDecimal.valueOf(100);
 
     private final TickerStreamRedisRepository tickerStreamRedisRepository;
@@ -44,12 +44,17 @@ public class TickerStreamConsumer {
 
         try {
             for (String key : tickerStreamRedisRepository.findStreamKeys()) {
-                String lastRecordId = lastRecordIds.getOrDefault(key, FIRST_RECORD_ID);
-                for (TickerStreamRedisRepository.StreamEntry entry : tickerStreamRedisRepository.readAfter(key, lastRecordId)) {
-                    lastRecordIds.put(entry.key(), entry.recordId());
-                    TickerStreamMessage message = entry.message();
-                    sseEventPublisher.broadcast(message.exchange(), message.market(), SseEventType.TICKER, toResponseDto(message));
+                // 신규 구독: 과거 backlog를 재생하지 않도록 스트림의 현재 최신 ID부터 시작한다.
+                String lastRecordId = lastRecordIds.computeIfAbsent(key, tickerStreamRedisRepository::latestId);
+                List<TickerStreamRedisRepository.StreamEntry> entries = tickerStreamRedisRepository.readAfter(key, lastRecordId);
+                if (entries.isEmpty()) {
+                    continue;
                 }
+                // 폴 주기(1s) 동안 쌓인 sub-초 틱은 합쳐서 코인당 "최신 1건"만 전송한다.
+                TickerStreamRedisRepository.StreamEntry latest = entries.get(entries.size() - 1);
+                lastRecordIds.put(latest.key(), latest.recordId());
+                TickerStreamMessage message = latest.message();
+                sseEventPublisher.broadcast(message.exchange(), message.market(), SseEventType.TICKER, toResponseDto(message));
             }
         } catch (RuntimeException exception) {
             log.warn("Ticker Redis Stream polling failed", exception);
