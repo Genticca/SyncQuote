@@ -8,8 +8,8 @@ spring:
       file: compose.yaml
   datasource:
     url: jdbc:mysql://localhost:3306/syncquote?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: syncquote
-    password: syncquote
+    username: ${DB_USERNAME:syncquote}
+    password: ${DB_PASSWORD:syncquote}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:

@@ -3,16 +3,17 @@ services:
     image: mysql:8.4
     environment:
       MYSQL_DATABASE: syncquote
-      MYSQL_USER: syncquote
-      MYSQL_PASSWORD: syncquote
-      MYSQL_ROOT_PASSWORD: syncquote-root
+      # 크리덴셜은 env로 오버라이드 가능(미설정 시 로컬 dev 기본값 사용).
+      MYSQL_USER: ${MYSQL_USER:-syncquote}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-syncquote}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-syncquote-root}
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"   # 로컬 전용 바인딩: 호스트 툴만 접근, 외부 인터페이스 노출 방지
     volumes:
       - mysql-data:/var/lib/mysql
       - ./01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-psyncquote-root"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD:-syncquote-root}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -20,7 +21,7 @@ services:
   redis:
     image: redis:7.4-alpine
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"   # 로컬 전용 바인딩: 무인증 dev redis 외부 노출 방지
     volumes:
       - redis-data:/data
     healthcheck:
@@ -37,8 +38,8 @@ services:
     environment:
       SPRING_DOCKER_COMPOSE_ENABLED: "false"
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/syncquote?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: syncquote
-      SPRING_DATASOURCE_PASSWORD: syncquote
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-syncquote}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-syncquote}
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: "6379"
     ports:
